@@ -2,7 +2,10 @@ import { z } from 'zod';
 import { fromZodError } from 'zod-validation-error';
 import { FathomApiError } from './http';
 
-// Common validation schemas
+/**
+ * Pagination schema
+ * This schema validates the pagination parameters for API requests.
+ */
 export const paginationSchema: z.ZodObject<{
   limit: z.ZodOptional<z.ZodNumber>;
   starting_after: z.ZodOptional<z.ZodString>;
@@ -13,7 +16,10 @@ export const paginationSchema: z.ZodObject<{
   ending_before: z.string().optional(),
 }).strict();
 
-// Site validation schemas
+/**
+ * Site schema
+ * This schema validates the site data for creating a site.
+ */
 export const createSiteSchema: z.ZodEffects<z.ZodObject<{
   name: z.ZodString;
   sharing: z.ZodOptional<z.ZodEnum<["none", "private", "public"]>>;
@@ -32,6 +38,10 @@ export const createSiteSchema: z.ZodEffects<z.ZodObject<{
   path: ['share_password'],
 });
 
+/**
+ * Site schema
+ * This schema validates the optional fields for updating a site.
+ */
 export const updateSiteSchema: z.ZodEffects<z.ZodObject<{
   name: z.ZodOptional<z.ZodString>;
   sharing: z.ZodOptional<z.ZodEnum<["none", "private", "public"]>>;
@@ -50,13 +60,20 @@ export const updateSiteSchema: z.ZodEffects<z.ZodObject<{
   path: ['share_password'],
 });
 
-// Event validation schemas
+/**
+ * Event schema
+ * This schema validates the event data for creating an event.
+ */
 export const createEventSchema: z.ZodObject<{
   name: z.ZodString;
 }> = z.object({
   name: z.string().min(1).max(255),
 }).strict();
 
+/**
+ * Update event schema
+ * This schema validates the event data for updating an event.
+ */
 export const updateEventSchema: z.ZodObject<{
   name: z.ZodString;
 }> = z.object({
@@ -76,6 +93,10 @@ const aggregationFilterSchema: z.ZodObject<{
   value: z.string(),
 }).strict();
 
+/**
+ * Aggregation report validation schema
+ * This schema validates the parameters for an aggregation report.
+ */
 export const aggregationParamsSchema: z.ZodObject<{
   entity: z.ZodEnum<["pageview", "event"]>;
   entity_id: z.ZodString;
@@ -106,7 +127,10 @@ export const aggregationParamsSchema: z.ZodObject<{
   filters: z.array(aggregationFilterSchema).optional(),
 }).strict();
 
-// Current visitors validation schema
+/**
+ * Current visitors validation schema
+ * This schema validates the parameters for retrieving current visitors at a site.
+ */
 export const currentVisitorsParamsSchema: z.ZodObject<{
   site_id: z.ZodString;
   detailed: z.ZodOptional<z.ZodBoolean>;
@@ -115,7 +139,10 @@ export const currentVisitorsParamsSchema: z.ZodObject<{
   detailed: z.boolean().optional(),
 }).strict();
 
-// Client options validation
+/**
+ * Client options schema
+ * This schema validates the options for creating a client.
+ */
 export const clientOptionsSchema: z.ZodObject<{
   token: z.ZodString;
   version: z.ZodOptional<z.ZodEnum<["v1"]>>;
@@ -150,5 +177,14 @@ export function validate<T>(
 }
 
 // Rename exports inline to match the names expected by other files
+/**
+ * Aggregation schema
+ * @alias aggregationParamsSchema
+ */
 export const aggregationSchema = aggregationParamsSchema;
+
+/**
+ * Current visitors schema
+ * @alias currentVisitorsParamsSchema
+ */
 export const currentVisitorsSchema = currentVisitorsParamsSchema;

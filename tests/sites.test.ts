@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { HttpClient } from '../src/utils/http';
 import { SitesResource } from '../src/api/v1/sites';
-import { server, createMockHandler } from '../src/utils/test-setup';
+import { server, createMockHandler } from './test-setup';
 import { rest } from 'msw';
 
 describe('SitesResource', () => {

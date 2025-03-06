@@ -6,6 +6,8 @@ import { clientOptionsSchema, validate } from './utils/validation';
 /**
  * Fathom Analytics API SDK
  * A fully typed client for interacting with the Fathom Analytics API
+ * @link https://github.com/mackenly/fathom-api
+ * @link https://usefathom.com/docs/api
  */
 export class FathomApi {
   private http: HttpClient;

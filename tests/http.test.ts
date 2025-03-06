@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { HttpClient, FathomApiError } from '../src/utils/http';
-import { server, createMockHandler } from '../src/utils/test-setup';
+import { server, createMockHandler } from './test-setup';
 import { rest } from 'msw';
 
 describe('HttpClient', () => {
