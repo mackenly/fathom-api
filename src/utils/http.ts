@@ -88,12 +88,21 @@ export class HttpClient {
 
     try {
       // Make the request
-      const response = await fetch(url.toString(), requestOptions);
+      const response = await fetch(url, requestOptions);
       const responseData = await response.json();
 
       // Handle API errors
       if (!response.ok) {
         const errorResponse = responseData as ErrorResponse;
+
+        // if a 401 error is returned, it's likely an authentication issue
+        if (response.status === 401) {
+          throw new FathomApiError(
+            'Authentication error: please check your API token',
+            response.status
+          );
+        }
+        
         throw new FathomApiError(
           errorResponse.error || 'Unknown error occurred',
           response.status

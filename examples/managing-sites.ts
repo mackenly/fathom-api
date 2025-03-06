@@ -1,4 +1,4 @@
-import FathomApi from '../src';
+import { FathomApi, FathomApiError } from '../src';
 
 // Create a new client with your API token
 const fathom = new FathomApi({
@@ -13,7 +13,11 @@ async function createSite() {
     });
     console.log('Created Site:', newSite);
   } catch (error) {
-    console.error('Error:', error);
+    if (error instanceof FathomApiError) {
+      console.error('API Error:', error.message);
+    } else {
+      console.error('Error:', error);
+    }
   }
 }
 
@@ -29,7 +33,11 @@ async function updateSite() {
     });
     console.log('Updated Site:', updatedSite);
   } catch (error) {
-    console.error('Error:', error);
+    if (error instanceof FathomApiError) {
+      console.error('API Error:', error.message);
+    } else {
+      console.error('Error:', error);
+    }
   }
 }
 
@@ -41,7 +49,11 @@ async function wipeSite() {
     const wipedSite = await fathom.api.sites.wipe('SITEID');
     console.log('Wiped Site:', wipedSite);
   } catch (error) {
-    console.error('Error:', error);
+    if (error instanceof FathomApiError) {
+      console.error('API Error:', error.message);
+    } else {
+      console.error('Error:', error);
+    }
   }
 }
 
@@ -53,7 +65,11 @@ async function deleteSite() {
     const deletedSite = await fathom.api.sites.delete('SITEID');
     console.log('Deleted Site:', deletedSite);
   } catch (error) {
-    console.error('Error:', error);
+    if (error instanceof FathomApiError) {
+      console.error('API Error:', error.message);
+    } else {
+      console.error('Error:', error);
+    }
   }
 }
 

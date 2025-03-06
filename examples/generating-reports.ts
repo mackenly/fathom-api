@@ -1,4 +1,4 @@
-import FathomApi from '../src';
+import { FathomApi, FathomApiError } from '../src';
 
 // Create a new client with your API token
 const fathom = new FathomApi({
@@ -26,7 +26,11 @@ async function getPageviewReport() {
     });
     console.log('Pageview Report:', report);
   } catch (error) {
-    console.error('Error:', error);
+    if (error instanceof FathomApiError) {
+      console.error('API Error:', error.message);
+    } else {
+      console.error('Error:', error);
+    }
   }
 }
 
@@ -43,7 +47,11 @@ async function getEventReport() {
     });
     console.log('Event Report:', report);
   } catch (error) {
-    console.error('Error:', error);
+    if (error instanceof FathomApiError) {
+      console.error('API Error:', error.message);
+    } else {
+      console.error('Error:', error);
+    }
   }
 }
 
@@ -58,7 +66,11 @@ async function getCurrentVisitors() {
     });
     console.log('Current Visitors:', visitors);
   } catch (error) {
-    console.error('Error:', error);
+    if (error instanceof FathomApiError) {
+      console.error('API Error:', error.message);
+    } else {
+      console.error('Error:', error);
+    }
   }
 }
 

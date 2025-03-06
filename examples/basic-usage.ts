@@ -1,4 +1,4 @@
-import FathomApi from '../src';
+import { FathomApi, FathomApiError} from '../src';
 
 // Create a new client with your API token
 const fathom = new FathomApi({
@@ -11,7 +11,11 @@ async function getAccountInfo() {
     const account = await fathom.api.account.get();
     console.log('Account:', account);
   } catch (error) {
-    console.error('Error:', error);
+    if (error instanceof FathomApiError) {
+      console.error('API Error:', error.message);
+    } else {
+      console.error('Error:', error);
+    }
   }
 }
 
@@ -23,7 +27,11 @@ async function listSites() {
     const sites = await fathom.api.sites.list();
     console.log('Sites:', sites);
   } catch (error) {
-    console.error('Error:', error);
+    if (error instanceof FathomApiError) {
+      console.error('API Error:', error.message);
+    } else {
+      console.error('Error:', error);
+    }
   }
 }
 
