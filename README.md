@@ -1,28 +1,48 @@
 # Fathom Analytics API SDK
 
-A fully-typed TypeScript SDK for interacting with the [Fathom Analytics API](https://usefathom.com/api). Works in any JavaScript runtime environment that supports the Fetch API, including browsers, Node.js (v18+), Bun, Cloudflare Workers, and more.
+A fully-typed TypeScript SDK for interacting with the [Fathom Analytics API](https://usefathom.com/api). Works in any JavaScript runtime environment that supports the Fetch API, including browsers, Node.js (v18+), Bun, Deno, Cloudflare Workers, and more.
 
 ## Features
 
 - 🔒 Full TypeScript support with accurate type definitions
-- 🚀 Support for all Fathom Analytics API endpoints
+- 🚀 Support for all Fathom Analytics API endpoints (as of writing)
 - 📊 Detailed response types for all API resources
 - 🔄 Promise-based API with async/await support
 - 📈 Smart pagination for listing resources
 - 🔍 Comprehensive methods for sites, events, reports, and more
-- 🔮 Designed for future API versions with version selection
 - ⚡ Works in any JavaScript runtime with Fetch API support
+- 🔮 Full support for current API capabilities and versioning for future proofing
 
 ## Installation
-
+Use your favorite package manager and registry to install the package:
 ```bash
-npm install fathom-api
+npm install @mackenly/fathom-api
+```
+```bash
+yarn add @mackenly/fathom-api
+```
+```bash
+pnpm add @mackenly/fathom-api
+```
+```bash
+deno add jsr:@mackenly/fathom-api
+```
+```typescript
+import * as fathom_api from "jsr:@mackenly/fathom-api";
+```
+```bash
+bun add @mackenly/fathom-api
 ```
 
+
 ## Quick Start
+[Get an API token from your Fathom Analytics account settings](https://app.usefathom.com/api) and use it to create a new client.
+
+> [!WARNING]  
+> Use permissions to restrict the API token to only the necessary operations (ex: `Admin`, `All sites (read only)`, `Site specific`)
 
 ```typescript
-import FathomApi from 'fathom-api';
+import FathomApi from '@mackenly/fathom-api';
 
 // Create a new client with your API token
 const fathom = new FathomApi({
@@ -139,7 +159,7 @@ const currentVisitors = await fathom.api.reports.currentVisitors({
 
 ### Using Different API Versions
 
-This SDK is designed to support potential future API versions. The default version and as of writing only version is v1, but you can specify a different version when creating the client or accessing the API:
+This SDK is designed to support potential future API versions. The default version and, as of writing, the only version is v1, but you can specify a different version when creating the client or accessing the API:
 
 ```typescript
 // Specify version at initialization
@@ -176,7 +196,7 @@ new FathomApi(options: {
 The SDK throws `FathomApiError` instances for API errors. These include an `error` property with the error message from the API and a `status` property with the HTTP status code:
 
 ```typescript
-import { FathomApi, FathomApiError } from 'fathom-api';
+import { FathomApi, FathomApiError } from '@mackenly/fathom-api';
 
 try {
   const result = await fathom.api.sites.get('non-existent-site');
@@ -210,24 +230,12 @@ This library is tested for compatibility with:
 - Modern browsers (Chrome, Firefox, Safari, Edge)
 - Cloudflare Workers
 - Bun
+- Deno
 
-### Running Compatibility Tests
+> [!WARNING]  
+> If running in a browser environment or anywhere that users could access the API token, it is recommended to use a server-side proxy to keep the token secure rather than exposing it directly in client-side code.
 
-```bash
-# Run all compatibility tests
-npm run test:compat
-
-# Run Node.js specific tests
-npm run test:node
-
-# Run browser-specific tests
-npm run test tests/compatibility/browser.test.ts
-
-# Run in Bun
-bun test tests/compatibility/environment.test.ts
-```
-
-The library uses standard Web APIs and modern JavaScript features that are widely supported across all major JavaScript environments.
+The library uses standard Web APIs and modern JavaScript features that are widely supported across JavaScript environments.
 
 ## Contributing
 
