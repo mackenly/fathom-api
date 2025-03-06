@@ -14,6 +14,8 @@ jobs:
     timeout-minutes: 10
     permissions:
       contents: write
+    outputs:
+      new_tag: ${{ steps.bump_version.outputs.new_tag }}
 
     steps:
       - name: Checkout code
@@ -42,7 +44,7 @@ jobs:
           git config --global user.name "github-actions[bot]"
           # First bump the version in package.json and get the new tag
           new_tag=$(npm version patch --no-git-tag-version)
-          echo "new_tag=${new_tag}" >> $GITHUB_ENV
+          echo "new_tag=${new_tag}" >> $GITHUB_OUTPUT
           
           # Now update jsr.json with the new version from package.json
           new_version=$(jq -r '.version' package.json)
@@ -86,8 +88,6 @@ jobs:
               
         - name: Publish to npm
           run: npm publish --access public --tag latest
-          env:
-            NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   publish-github-packages:
     if: success()
@@ -133,6 +133,14 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install dependencies
+        run: npm ci
+
       - name: Publish to jsr
         run: npx jsr publish
 
@@ -142,7 +150,7 @@ jobs:
     needs: bump-version
     timeout-minutes: 10
     permissions:
-      contents: read
+      contents: write  # Changed to write since we need to create a release
 
     steps:
         - name: Checkout code
@@ -154,8 +162,8 @@ jobs:
           env:
             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           with:
-            tag: ${{ env.new_tag }}
-            name: ${{ env.new_tag }}
+            tag: ${{ needs.bump-version.outputs.new_tag }}
+            name: ${{ needs.bump-version.outputs.new_tag }}
             generateReleaseNotes: true
             draft: false
             prerelease: false
