@@ -1,15 +1,15 @@
 name: Publish
 
 on:
-  push:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
     branches:
       - main
-    paths-ignore:
-      - '**/*.md'
 
 jobs:
   bump-version:
-    if: github.repository_owner == 'mackenly' && needs.lint.result == 'success' && needs.test.result == 'success'
+    if: github.repository_owner == 'mackenly' && github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:
