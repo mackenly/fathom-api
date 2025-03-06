@@ -1,2 +1,238 @@
-# fathom-api
- Typescript wrapper around Fathom Analytic's API
+# Fathom Analytics API SDK
+
+A fully-typed TypeScript SDK for interacting with the [Fathom Analytics API](https://usefathom.com/api). Works in any JavaScript runtime environment that supports the Fetch API, including browsers, Node.js (v18+), Bun, Cloudflare Workers, and more.
+
+## Features
+
+- 🔒 Full TypeScript support with accurate type definitions
+- 🚀 Support for all Fathom Analytics API endpoints
+- 📊 Detailed response types for all API resources
+- 🔄 Promise-based API with async/await support
+- 📈 Smart pagination for listing resources
+- 🔍 Comprehensive methods for sites, events, reports, and more
+- 🔮 Designed for future API versions with version selection
+- ⚡ Works in any JavaScript runtime with Fetch API support
+
+## Installation
+
+```bash
+npm install fathom-api
+```
+
+## Quick Start
+
+```typescript
+import FathomApi from 'fathom-api';
+
+// Create a new client with your API token
+const fathom = new FathomApi({
+  token: 'your-api-token',
+  // Optional parameters
+  // version: 'v1',
+  // baseUrl: 'https://api.usefathom.com'
+});
+
+// Example: Get account information
+async function getAccountInfo() {
+  try {
+    const account = await fathom.api.account.get();
+    console.log('Account:', account);
+  } catch (error) {
+    console.error('Error:', error);
+  }
+}
+
+getAccountInfo();
+```
+
+## Usage Examples
+
+### Managing Sites
+
+```typescript
+// List all sites
+const sites = await fathom.api.sites.list();
+
+// Get a specific site
+const site = await fathom.api.sites.get('SITEID');
+
+// Create a new site
+const newSite = await fathom.api.sites.create({
+  name: 'My New Website'
+});
+
+// Update a site
+const updatedSite = await fathom.api.sites.update('SITEID', {
+  name: 'Updated Website Name',
+  sharing: 'private',
+  share_password: 'password123'
+});
+
+// Wipe site data
+const wipedSite = await fathom.api.sites.wipe('SITEID');
+
+// Delete a site
+const deletedSite = await fathom.api.sites.delete('SITEID');
+```
+
+### Working with Events
+
+```typescript
+// List all events for a site
+const events = await fathom.api.events('SITEID').list();
+
+// Get a specific event
+const event = await fathom.api.events('SITEID').get('EVENT_ID');
+
+// Create a new event
+const newEvent = await fathom.api.events('SITEID').create({
+  name: 'Newsletter Signup'
+});
+
+// Update an event
+const updatedEvent = await fathom.api.events('SITEID').update('EVENT_ID', {
+  name: 'Updated Event Name'
+});
+
+// Wipe event data
+const wipedEvent = await fathom.api.events('SITEID').wipe('EVENT_ID');
+
+// Delete an event
+const deletedEvent = await fathom.api.events('SITEID').delete('EVENT_ID');
+```
+
+### Generating Reports
+
+```typescript
+// Get aggregation report for pageviews
+const pageviewReport = await fathom.api.reports.aggregation({
+  entity: 'pageview',
+  entity_id: 'SITEID',
+  aggregates: 'visits,uniques,pageviews',
+  date_grouping: 'day',
+  field_grouping: 'pathname',
+  date_from: '2022-01-01',
+  date_to: '2022-01-31',
+  filters: [
+    {
+      property: 'pathname',
+      operator: 'is',
+      value: '/blog'
+    }
+  ]
+});
+
+// Get aggregation report for events
+const eventReport = await fathom.api.reports.aggregation({
+  entity: 'event',
+  entity_id: 'EVENT_ID',
+  aggregates: 'conversions,unique_conversions',
+  date_grouping: 'month'
+});
+
+// Get current visitors
+const currentVisitors = await fathom.api.reports.currentVisitors({
+  site_id: 'SITEID',
+  detailed: true
+});
+```
+
+### Using Different API Versions
+
+This SDK is designed to support potential future API versions. The default version and as of writing only version is v1, but you can specify a different version when creating the client or accessing the API:
+
+```typescript
+// Specify version at initialization
+const fathom = new FathomApi({
+  token: 'your-api-token',
+  version: 'v1'
+});
+
+// Or access a specific version after initialization
+const v1 = fathom.version('v1');
+```
+
+## API Reference
+
+### Client Initialization
+
+```typescript
+new FathomApi(options: {
+  token: string;          // Your Fathom API token
+  version?: 'v1';         // API version to use (default: 'v1')
+  baseUrl?: string;       // API base URL (default: 'https://api.usefathom.com')
+})
+```
+
+### Resources
+
+- `.api.account` - Account operations
+- `.api.sites` - Site operations
+- `.api.events(siteId)` - Event operations for a specific site
+- `.api.reports` - Report generation
+
+## Error Handling
+
+The SDK throws `FathomApiError` instances for API errors. These include an `error` property with the error message from the API and a `status` property with the HTTP status code:
+
+```typescript
+import { FathomApi, FathomApiError } from 'fathom-api';
+
+try {
+  const result = await fathom.api.sites.get('non-existent-site');
+} catch (error) {
+  if (error instanceof FathomApiError) {
+    console.error(`API Error (${error.status}):`, error.error);
+  } else {
+    console.error('Unexpected error:', error);
+  }
+}
+```
+
+## Pagination
+
+List operations support pagination parameters:
+
+```typescript
+const firstPage = await fathom.api.sites.list({ limit: 20 });
+
+// Get the next page if there are more results
+if (firstPage.has_more && firstPage.data.length > 0) {
+  const lastId = firstPage.data[firstPage.data.length - 1].id;
+  const nextPage = await fathom.api.sites.list({ limit: 20, starting_after: lastId });
+}
+```
+
+## Compatibility
+
+This library is tested for compatibility with:
+- Node.js 18+
+- Modern browsers (Chrome, Firefox, Safari, Edge)
+- Cloudflare Workers
+- Bun
+
+### Running Compatibility Tests
+
+```bash
+# Run all compatibility tests
+npm run test:compat
+
+# Run Node.js specific tests
+npm run test:node
+
+# Run browser-specific tests
+npm run test tests/compatibility/browser.test.ts
+
+# Run in Bun
+bun test tests/compatibility/environment.test.ts
+```
+
+The library uses standard Web APIs and modern JavaScript features that are widely supported across all major JavaScript environments.
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+## License
+
+[MIT](./LICENSE)

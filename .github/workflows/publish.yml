@@ -1,0 +1,161 @@
+name: Publish
+
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - '**/*.md'
+
+jobs:
+  bump-version:
+    if: github.repository_owner == 'mackenly' && needs.lint.result == 'success' && needs.test.result == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+            fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run lint
+        run: npm run lint
+
+      - name: Run tests
+        run: npm run test
+
+      - name: Bump version and update jsr.json
+        id: bump_version
+        run: |
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "github-actions[bot]"
+          # First bump the version in package.json and get the new tag
+          new_tag=$(npm version patch --no-git-tag-version)
+          echo "new_tag=${new_tag}" >> $GITHUB_ENV
+          
+          # Now update jsr.json with the new version from package.json
+          new_version=$(jq -r '.version' package.json)
+          jq --arg new_version "$new_version" '.version = $new_version' jsr.json > jsr.tmp && mv jsr.tmp jsr.json
+          
+          # Commit all changes and push with tag
+          git add package.json jsr.json
+          git commit -m "ci: bump version to $new_tag"
+          git tag $new_tag
+          git push origin main --follow-tags
+
+  publish-npm:
+    if: success()
+    runs-on: ubuntu-latest
+    needs: bump-version
+    timeout-minutes: 10
+    permissions:
+      contents: read
+
+    steps:
+        - name: Checkout code
+          uses: actions/checkout@v4
+        
+        - name: Set up Node.js
+          uses: actions/setup-node@v4
+          with:
+            node-version: '22'
+            registry-url: 'https://registry.npmjs.org'
+            scope: '@${{ github.repository_owner }}'
+
+        - name: Configure npm
+          run: echo "//registry.npmjs.org/:_authToken=${NODE_AUTH_TOKEN}" > ~/.npmrc
+          env:
+            NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+        - name: Install dependencies
+          run: npm ci
+
+        - name: Build
+          run: npm run build
+              
+        - name: Publish to npm
+          run: npm publish --access public --tag latest
+          env:
+            NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  publish-github-packages:
+    if: success()
+    runs-on: ubuntu-latest
+    needs: bump-version
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+        - name: Checkout code
+          uses: actions/checkout@v4
+        
+        - name: Set up Node.js
+          uses: actions/setup-node@v4
+          with:
+            node-version: '22'
+            registry-url: 'https://npm.pkg.github.com'
+            scope: '@${{ github.repository_owner }}'
+
+        - name: Install dependencies
+          run: npm ci
+
+        - name: Build
+          run: npm run build
+              
+        - name: Publish to GitHub Packages
+          run: npm publish --access public
+          env:
+            NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  publish-jsr:
+    if: success()
+    runs-on: ubuntu-latest
+    needs: bump-version
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      id-token: write # The OIDC ID token is used for authentication with JSR.
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Publish to jsr
+        run: npx jsr publish
+
+  create-release:
+    if: success()
+    runs-on: ubuntu-latest
+    needs: bump-version
+    timeout-minutes: 10
+    permissions:
+      contents: read
+
+    steps:
+        - name: Checkout code
+          uses: actions/checkout@v4
+    
+        - name: Create release
+          id: create_release
+          uses: ncipollo/release-action@v1
+          env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          with:
+            tag: ${{ env.new_tag }}
+            name: ${{ env.new_tag }}
+            generateReleaseNotes: true
+            draft: false
+            prerelease: false

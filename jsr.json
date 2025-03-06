@@ -1,0 +1,10 @@
+{
+  "name": "@mackenly/fathom-api",
+  "version": "0.0.1",
+  "license": "MIT",
+  "exports": "./src/index.ts",
+  "test": "tests/**/*test.ts",
+  "publish": {
+    "include": ["src/**/*", "README.md", "LICENSE"]
+  }
+}

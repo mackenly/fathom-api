@@ -1,0 +1,11 @@
+[test]
+preload = "./tests/compatibility/setup.ts"
+environment = ["NODE_ENV=test"]
+
+[install]
+peer = true
+production = false
+frozen = true
+
+[debug]
+bail = true
