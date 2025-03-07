@@ -102,9 +102,17 @@ export class HttpClient {
             response.status
           );
         }
+
+        // if a 400 error is returned, it's likely a validation issue
+        if (response.status === 400) {
+          throw new FathomApiError(
+            errorResponse.error || await response.text() || 'Validation error',
+            response.status
+          );
+        }
         
         throw new FathomApiError(
-          errorResponse.error || 'Unknown error occurred',
+          errorResponse.error || await response.text() || 'Unknown error occurred',
           response.status
         );
       }
