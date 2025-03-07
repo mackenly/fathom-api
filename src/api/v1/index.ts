@@ -75,9 +75,10 @@ export class FathomApiV1 {
    * Convenience method to get all sites
    * This method handles pagination automatically until all sites are retrieved
    * 
-   * @returns Promise with an array of all sites
+   * @param limit - Maximum number of sites to retrieve (optional)
+   * @returns Promise with an array of sites
    */
-  async getAllSites(): Promise<Site[]> {
+  async getAllSites(limit?: number): Promise<Site[]> {
     const allSites: Site[] = [];
     let lastId: string | undefined = undefined;
     let hasMore = true;
@@ -90,6 +91,11 @@ export class FathomApiV1 {
       
       const response = await this.sites.list(params);
       allSites.push(...response.data);
+      
+      // Stop if we've reached the limit
+      if (limit && allSites.length >= limit) {
+        return allSites.slice(0, limit);
+      }
       
       hasMore = response.has_more;
       if (hasMore && response.data.length > 0) {
@@ -109,5 +115,43 @@ export class FathomApiV1 {
    */
   async getEvent(siteId: string, eventId: string): Promise<Event> {
     return this.events(siteId).get(eventId);
+  }
+
+  /**
+   * Convenience method to get all events for a site
+   * This method handles pagination automatically until all events are retrieved
+   * 
+   * @param siteId - The ID of the site
+   * @param limit - Maximum number of events to retrieve (optional)
+   * @returns Promise with an array of events
+   */
+  async getAllEvents(siteId: string, limit?: number): Promise<Event[]> {
+    if (!siteId) throw new Error('Site ID is required');
+    
+    const allEvents: Event[] = [];
+    let lastId: string | undefined = undefined;
+    let hasMore = true;
+    
+    while (hasMore) {
+      const params: PaginationParams = { limit: 20 };
+      if (lastId) {
+        params.starting_after = lastId;
+      }
+      
+      const response = await this.events(siteId).list(params);
+      allEvents.push(...response.data);
+      
+      // Stop if we've reached the limit
+      if (limit && allEvents.length >= limit) {
+        return allEvents.slice(0, limit);
+      }
+      
+      hasMore = response.has_more;
+      if (hasMore && response.data.length > 0) {
+        lastId = response.data[response.data.length - 1].id;
+      }
+    }
+    
+    return allEvents;
   }
 }
