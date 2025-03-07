@@ -1,6 +1,6 @@
 # Fathom Analytics API SDK
 
-A fully-typed TypeScript SDK for interacting with the [Fathom Analytics API](https://usefathom.com/api). Works in any JavaScript runtime environment that supports the Fetch API, including browsers, Node.js (v18+), Bun, Deno, Cloudflare Workers, and more.
+A fully-typed unofficial TypeScript SDK for interacting with the [Fathom Analytics API](https://usefathom.com/api). Works in any JavaScript runtime environment that supports the Fetch API, including browsers, Node.js (v18+), Bun, Deno, Cloudflare Workers, and more.
 
 ## Features
 
@@ -244,3 +244,5 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 ## License
 
 [MIT](./LICENSE)
+
+This project is not affiliated with, part of, or endorsed by Fathom Analytics or Conva Ventures Inc. For Fathom issues or support requests not related to this package, please contact the Fathom team directly. For enterprise support for this package, please contact [Tricities Media Group](https://tricitiesmediagroup.com).
