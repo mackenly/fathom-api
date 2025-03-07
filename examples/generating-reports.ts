@@ -14,8 +14,8 @@ async function getPageviewReport() {
       aggregates: 'visits,uniques,pageviews',
       date_grouping: 'day',
       field_grouping: 'pathname',
-      date_from: '2022-01-01',
-      date_to: '2022-01-31',
+      date_from: '2025-01-01',
+      date_to: '2025-01-31',
       filters: [
         {
           property: 'pathname',

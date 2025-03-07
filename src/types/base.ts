@@ -63,6 +63,7 @@ export interface ListResponse<T> {
  */
 export interface ErrorResponse {
   error: string;
+  message?: string;
 }
 
 /**
