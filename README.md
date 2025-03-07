@@ -58,7 +58,11 @@ async function getAccountInfo() {
     const account = await fathom.api.account.get();
     console.log('Account:', account);
   } catch (error) {
-    console.error('Error:', error);
+    if (error instanceof FathomApiError) {
+      console.error('API Error:', error.message);
+    } else {
+      console.error('Error:', error);
+    }
   }
 }
 
@@ -71,7 +75,7 @@ getAccountInfo();
 
 ```typescript
 // List all sites
-const sites = await fathom.api.sites.list();
+const sites = await fathom.api.getAllSites();
 
 // Get a specific site
 const site = await fathom.api.sites.get('SITEID');
@@ -99,7 +103,7 @@ const deletedSite = await fathom.api.sites.delete('SITEID');
 
 ```typescript
 // List all events for a site
-const events = await fathom.api.events('SITEID').list();
+const events = await fathom.api.getAllEvents('SITEID');
 
 // Get a specific event
 const event = await fathom.api.events('SITEID').get('EVENT_ID');

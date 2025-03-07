@@ -24,7 +24,7 @@ getAccountInfo();
 // Example: List all sites
 async function listSites() {
   try {
-    const sites = await fathom.api.sites.list();
+    const sites = await fathom.api.getAllSites();
     console.log('Sites:', sites);
   } catch (error) {
     if (error instanceof FathomApiError) {
