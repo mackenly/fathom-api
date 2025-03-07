@@ -12,12 +12,17 @@ export class ReportsResource {
   /**
    * Generate an aggregation report
    * 
+   * This endpoints's response does not match the API documentation. 
+   * As such, we're using the type for what actually gets returned. 
+   * This may break in the future if the API changes.
+   * 
+   * @link https://usefathom.com/api#aggregation
    * @param params - Aggregation parameters
    * @returns Promise with aggregation data
    */
-  async aggregation<T = Record<string, any>>(params: AggregationParams): Promise<{ object: 'list', url: string, has_more: boolean, data: T[] }> {
+  async aggregation<T = Record<string, any>>(params: AggregationParams): Promise<Array<T>> {
     const validatedParams = validate(aggregationSchema, params);
-    return this.http.get<{ object: 'list', url: string, has_more: boolean, data: T[] }>('/v1/aggregations', validatedParams);
+    return this.http.get<Array<T>>('/v1/aggregations', validatedParams);
   }
 
   /**
@@ -47,14 +52,14 @@ export class ReportsResource {
       groupBy?: 'day' | 'month' | 'year' | 'hour';
       limit?: number;
     } = {}
-  ): Promise<{ object: 'list', url: string, has_more: boolean, data: Array<{
+  ): Promise<Array<{
     date: string;
     visits: number;
     uniques: number;
     pageviews: number;
     bounce_rate: number;
     avg_duration: number;
-  }> }> {
+  }>> {
     return this.aggregation({
       entity: 'pageview',
       entity_id: siteId,
@@ -82,14 +87,14 @@ export class ReportsResource {
       timezone?: string;
       limit?: number;
     } = {}
-  ): Promise<{ object: 'list', url: string, has_more: boolean, data: Array<{
+  ): Promise< Array<{
     pathname: string;
     visits: number;
     uniques: number;
     pageviews: number;
     bounce_rate: number;
     avg_duration: number;
-  }> }> {
+  }>> {
     return this.aggregation({
       entity: 'pageview',
       entity_id: siteId,
@@ -118,11 +123,11 @@ export class ReportsResource {
       timezone?: string;
       limit?: number;
     } = {}
-  ): Promise<{ object: 'list', url: string, has_more: boolean, data: Array<{
+  ): Promise<Array<{
     referrer_hostname: string;
     visits: number;
     uniques: number;
-  }> }> {
+  }>> {
     return this.aggregation({
       entity: 'pageview',
       entity_id: siteId,
@@ -153,11 +158,11 @@ export class ReportsResource {
       timezone?: string;
       groupBy?: 'day' | 'month' | 'year' | 'hour';
     } = {}
-  ): Promise<{ object: 'list', url: string, has_more: boolean, data: Array<{
+  ): Promise<Array<{
     date: string;
     conversions: number;
     unique_conversions: number;
-  }> }> {
+  }>> {
     return this.aggregation({
       entity: 'event',
       entity_id: eventId,
