@@ -88,7 +88,7 @@ export class HttpClient {
 
     try {
       // Make the request
-      const response = await fetch(url, requestOptions);
+      const response = await fetch(url.toString(), requestOptions);
       const responseData = await response.json();
 
       // Handle API errors
