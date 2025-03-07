@@ -3,7 +3,7 @@ import { AccountResource } from './account';
 import { SitesResource } from './sites';
 import { EventsResource } from './events';
 import { ReportsResource } from './reports';
-import type { CurrentVisitorsParams } from '../../types/params';
+import type { PaginationParams } from '../../types/base';
 import type { CurrentVisitorsResponse, Account, Site, Event } from '../../types/entities';
 
 /**
@@ -69,6 +69,35 @@ export class FathomApiV1 {
    */
   async getSite(siteId: string): Promise<Site> {
     return this.sites.get(siteId);
+  }
+
+  /**
+   * Convenience method to get all sites
+   * This method handles pagination automatically until all sites are retrieved
+   * 
+   * @returns Promise with an array of all sites
+   */
+  async getAllSites(): Promise<Site[]> {
+    const allSites: Site[] = [];
+    let lastId: string | undefined = undefined;
+    let hasMore = true;
+
+    while (hasMore) {
+      const params: PaginationParams = { limit: 20 };
+      if (lastId) {
+        params.starting_after = lastId;
+      }
+      
+      const response = await this.sites.list(params);
+      allSites.push(...response.data);
+      
+      hasMore = response.has_more;
+      if (hasMore && response.data.length > 0) {
+        lastId = response.data[response.data.length - 1].id;
+      }
+    }
+
+    return allSites;
   }
 
   /**

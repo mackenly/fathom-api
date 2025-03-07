@@ -190,6 +190,7 @@ new FathomApi(options: {
 - `.api.sites` - Site operations
 - `.api.events(siteId)` - Event operations for a specific site
 - `.api.reports` - Report generation
+- `.api.*` - Variety of convenience methods for common operations
 
 ## Error Handling
 
@@ -214,12 +215,50 @@ try {
 List operations support pagination parameters:
 
 ```typescript
-const firstPage = await fathom.api.sites.list({ limit: 20 });
+const firstTwentySites = await fathom.api.sites.list({ limit: 20 });
+```
+Or to get all sites with automatic pagination:
 
-// Get the next page if there are more results
-if (firstPage.has_more && firstPage.data.length > 0) {
-  const lastId = firstPage.data[firstPage.data.length - 1].id;
-  const nextPage = await fathom.api.sites.list({ limit: 20, starting_after: lastId });
+```typescript
+const allSites = await fathom.api.getAllSites();
+```
+
+## Proxy Example
+If you're using this browser in frontend code or other applications where you might want to not include your API key, you can create a server-side request proxy to forward requests to the Fathom API, validate incoming API keys, and add your Fathom API key for the actual request to Fathom. Here's an example:
+
+In your client side code:
+```typescript
+const fathom = new FathomApi({
+  token: 'temp_token',
+  baseUrl: 'https://your-proxy-server.com'
+});
+```
+
+A Cloudflare Worker:
+```typescript
+export default {
+  async fetch(request) {
+    // Only allow GET requests for this example
+    if (request.method !== 'GET') {
+      return new Response('Method not allowed', { status: 405 });
+    }
+
+    const url = new URL(request.url);
+    const targetUrl = new URL(url.pathname + url.search, 'https://api.usefathom.com');
+    const newHeaders = new Headers(request.headers);
+    let authHeader = newHeaders.get('Authorization');
+
+    // Modify this to validate incoming API keys (perhaps from a database)
+    if (authHeader && authHeader.includes('temp_token')) {
+      authHeader = authHeader.replace('temp_token', 'real_token');
+      newHeaders.set('Authorization', authHeader);
+    }
+
+    return await fetch(targetUrl.toString(), {
+      method: 'GET',
+      headers: newHeaders,
+    });
+  }
 }
 ```
 
