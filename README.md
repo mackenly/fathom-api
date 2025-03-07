@@ -14,7 +14,7 @@ A fully-typed unofficial TypeScript SDK for interacting with the [Fathom Analyti
 - 🔮 Full support for current API capabilities and versioning for future proofing
 
 ## Installation
-Use your favorite package manager and registry to install the package:
+Use your favorite package manager and registry ([npm](https://www.npmjs.com/package/@mackenly/fathom-api), [jsr](https://jsr.io/@mackenly/fathom-api), and [GitHub Packages](https://github.com/users/mackenly/packages/npm/package/fathom-api)) to install the package:
 ```bash
 npm install @mackenly/fathom-api
 ```
