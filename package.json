@@ -1,6 +1,6 @@
 {
   "name": "@mackenly/fathom-api",
-  "version": "0.0.13",
+  "version": "0.0.14",
   "description": "Typescript wrapper around Fathom Analytics API",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
