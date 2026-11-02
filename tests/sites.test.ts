@@ -1,169 +1,168 @@
-import { describe, it, expect, beforeEach } from 'vitest';
-import { HttpClient } from '../src/utils/http';
-import { SitesResource } from '../src/api/v1/sites';
-import { server, createMockHandler, recordRequests } from './test-setup';
-import { expectSearch } from './expect-request';
-import { rest } from 'msw';
+import { rest } from "msw";
+import { beforeEach, describe, expect, it } from "vitest";
+import { SitesResource } from "../src/api/v1/sites";
+import { HttpClient } from "../src/utils/http";
+import { expectSearch } from "./expect-request";
+import { createMockHandler, recordRequests, server } from "./test-setup";
 
-describe('SitesResource', () => {
-  const client = new HttpClient({
-    token: 'test-token',
-    baseUrl: 'https://api.usefathom.com'
-  });
-  
-  const sites = new SitesResource(client);
+describe("SitesResource", () => {
+	const client = new HttpClient({
+		token: "test-token",
+		baseUrl: "https://api.usefathom.com",
+	});
 
-  const mockSite = {
-    id: 'ABCDEF',
-    object: 'site',
-    name: 'Test Site',
-    sharing: 'none',
-    created_at: '2022-01-01 12:00:00'
-  };
+	const sites = new SitesResource(client);
 
-  beforeEach(() => {
-    server.resetHandlers();
-  });
+	const mockSite = {
+		id: "ABCDEF",
+		object: "site",
+		name: "Test Site",
+		sharing: "none",
+		created_at: "2022-01-01 12:00:00",
+	};
 
-  describe('list', () => {
-    it('should list sites successfully', async () => {
-      server.use(
-        createMockHandler('get', '/v1/sites', {
-          object: 'list',
-          url: '/v1/sites',
-          has_more: false,
-          data: [mockSite]
-        })
-      );
+	beforeEach(() => {
+		server.resetHandlers();
+	});
 
-      const response = await sites.list();
-      
-      expect(response.object).toBe('list');
-      expect(response.has_more).toBe(false);
-      expect(response.data).toHaveLength(1);
-      expect(response.data[0]).toEqual(mockSite);
-    });
+	describe("list", () => {
+		it("should list sites successfully", async () => {
+			server.use(
+				createMockHandler("get", "/v1/sites", {
+					object: "list",
+					url: "/v1/sites",
+					has_more: false,
+					data: [mockSite],
+				}),
+			);
 
-    it('should support pagination parameters', async () => {
-      const requests = recordRequests({
-        object: 'list',
-        url: '/v1/sites',
-        has_more: false,
-        data: [mockSite],
-      });
+			const response = await sites.list();
 
-      const response = await sites.list({ limit: 20, starting_after: 'XYZ123' });
+			expect(response.object).toBe("list");
+			expect(response.has_more).toBe(false);
+			expect(response.data).toHaveLength(1);
+			expect(response.data[0]).toEqual(mockSite);
+		});
 
-      expect(response.object).toBe('list');
-      expect(response.has_more).toBe(false);
-      expect(response.data).toEqual([mockSite]);
-      expect(requests).toHaveLength(1);
-      expect(requests[0].pathname).toBe('/v1/sites');
-      expectSearch(requests[0].search, { limit: '20', starting_after: 'XYZ123' });
-    });
-  });
+		it("should support pagination parameters", async () => {
+			const requests = recordRequests({
+				object: "list",
+				url: "/v1/sites",
+				has_more: false,
+				data: [mockSite],
+			});
 
-  describe('get', () => {
-    it('should get a site by id', async () => {
-      server.use(
-        createMockHandler('get', '/v1/sites/ABCDEF', mockSite)
-      );
+			const response = await sites.list({ limit: 20, starting_after: "XYZ123" });
 
-      const site = await sites.get('ABCDEF');
-      expect(site).toEqual(mockSite);
-    });
+			expect(response.object).toBe("list");
+			expect(response.has_more).toBe(false);
+			expect(response.data).toEqual([mockSite]);
+			expect(requests).toHaveLength(1);
+			expect(requests[0].pathname).toBe("/v1/sites");
+			expectSearch(requests[0].search, { limit: "20", starting_after: "XYZ123" });
+		});
+	});
 
-    it('should throw error when siteId is missing', async () => {
-      await expect(sites.get('')).rejects.toThrow('Site ID is required');
-      await expect(sites.get(undefined as any)).rejects.toThrow('Site ID is required');
-      await expect(sites.update('', { name: 'Updated' })).rejects.toThrow('Site ID is required');
-      await expect(sites.wipe('')).rejects.toThrow('Site ID is required');
-      await expect(sites.delete('')).rejects.toThrow('Site ID is required');
-    });
-  });
+	describe("get", () => {
+		it("should get a site by id", async () => {
+			server.use(createMockHandler("get", "/v1/sites/ABCDEF", mockSite));
 
-  describe('create', () => {
-    it('should create a site successfully', async () => {
-      server.use(
-        rest.post('https://api.usefathom.com/v1/sites', async (req, res, ctx) => {
-          const body = await req.json();
-          return res(
-            ctx.status(200),
-            ctx.json({
-              id: 'NEWSITE',
-              object: 'site',
-              name: body.name,
-              sharing: body.sharing || 'none',
-              created_at: '2022-01-01 12:00:00'
-            })
-          );
-        })
-      );
+			const site = await sites.get("ABCDEF");
+			expect(site).toEqual(mockSite);
+		});
 
-      const site = await sites.create({ name: 'New Test Site' });
-      
-      expect(site.id).toBe('NEWSITE');
-      expect(site.name).toBe('New Test Site');
-    });
+		it("should throw error when siteId is missing", async () => {
+			await expect(sites.get("")).rejects.toThrow("Site ID is required");
+			// @ts-expect-error missing site ids are rejected at runtime
+			await expect(sites.get(undefined)).rejects.toThrow("Site ID is required");
+			await expect(sites.update("", { name: "Updated" })).rejects.toThrow("Site ID is required");
+			await expect(sites.wipe("")).rejects.toThrow("Site ID is required");
+			await expect(sites.delete("")).rejects.toThrow("Site ID is required");
+		});
+	});
 
-    it('should handle validation errors', async () => {
-      await expect(sites.create({ name: '' })).rejects.toThrow();
-    });
-  });
+	describe("create", () => {
+		it("should create a site successfully", async () => {
+			server.use(
+				rest.post("https://api.usefathom.com/v1/sites", async (req, res, ctx) => {
+					const body = await req.json();
+					return res(
+						ctx.status(200),
+						ctx.json({
+							id: "NEWSITE",
+							object: "site",
+							name: body.name,
+							sharing: body.sharing || "none",
+							created_at: "2022-01-01 12:00:00",
+						}),
+					);
+				}),
+			);
 
-  describe('update', () => {
-    it('should update a site successfully', async () => {
-      server.use(
-        rest.post('https://api.usefathom.com/v1/sites/ABCDEF', async (req, res, ctx) => {
-          const body = await req.json();
-          return res(
-            ctx.status(200),
-            ctx.json({
-              ...mockSite,
-              name: body.name
-            })
-          );
-        })
-      );
+			const site = await sites.create({ name: "New Test Site" });
 
-      const site = await sites.update('ABCDEF', { name: 'Updated Site Name' });
-      
-      expect(site.id).toBe('ABCDEF');
-      expect(site.name).toBe('Updated Site Name');
-    });
-  });
+			expect(site.id).toBe("NEWSITE");
+			expect(site.name).toBe("New Test Site");
+		});
 
-  describe('wipe', () => {
-    it('should wipe site data successfully', async () => {
-      server.use(
-        createMockHandler('delete', '/v1/sites/ABCDEF/data', {
-          id: 'ABCDEF',
-          object: 'site',
-          wiped: true
-        })
-      );
+		it("should handle validation errors", async () => {
+			await expect(sites.create({ name: "" })).rejects.toThrow();
+		});
+	});
 
-      const result = await sites.wipe('ABCDEF');
-      
-      expect(result.id).toBe('ABCDEF');
-      expect(result.wiped).toBe(true);
-    });
-  });
+	describe("update", () => {
+		it("should update a site successfully", async () => {
+			server.use(
+				rest.post("https://api.usefathom.com/v1/sites/ABCDEF", async (req, res, ctx) => {
+					const body = await req.json();
+					return res(
+						ctx.status(200),
+						ctx.json({
+							...mockSite,
+							name: body.name,
+						}),
+					);
+				}),
+			);
 
-  describe('delete', () => {
-    it('should delete a site successfully', async () => {
-      server.use(
-        createMockHandler('delete', '/v1/sites/ABCDEF', {
-          id: 'ABCDEF',
-          object: 'site',
-          deleted: true
-        })
-      );
+			const site = await sites.update("ABCDEF", { name: "Updated Site Name" });
 
-      const result = await sites.delete('ABCDEF');
-      
-      expect(result.id).toBe('ABCDEF');
-      expect(result.deleted).toBe(true);
-    });
-  });
+			expect(site.id).toBe("ABCDEF");
+			expect(site.name).toBe("Updated Site Name");
+		});
+	});
+
+	describe("wipe", () => {
+		it("should wipe site data successfully", async () => {
+			server.use(
+				createMockHandler("delete", "/v1/sites/ABCDEF/data", {
+					id: "ABCDEF",
+					object: "site",
+					wiped: true,
+				}),
+			);
+
+			const result = await sites.wipe("ABCDEF");
+
+			expect(result.id).toBe("ABCDEF");
+			expect(result.wiped).toBe(true);
+		});
+	});
+
+	describe("delete", () => {
+		it("should delete a site successfully", async () => {
+			server.use(
+				createMockHandler("delete", "/v1/sites/ABCDEF", {
+					id: "ABCDEF",
+					object: "site",
+					deleted: true,
+				}),
+			);
+
+			const result = await sites.delete("ABCDEF");
+
+			expect(result.id).toBe("ABCDEF");
+			expect(result.deleted).toBe(true);
+		});
+	});
 });
