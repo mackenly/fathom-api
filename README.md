@@ -14,6 +14,7 @@ A fully-typed unofficial TypeScript SDK for interacting with the [Fathom Analyti
 - 🔮 Full support for current API capabilities and versioning for future proofing
 
 ## Installation
+
 Use your favorite package manager and registry ([npm](https://www.npmjs.com/package/@mackenly/fathom-api), [jsr](https://jsr.io/@mackenly/fathom-api), and [GitHub Packages](https://github.com/users/mackenly/packages/npm/package/fathom-api)) to install the package:
 ```bash
 npm install @mackenly/fathom-api
@@ -36,34 +37,35 @@ bun add @mackenly/fathom-api
 
 
 ## Quick Start
+
 [Get an API token from your Fathom Analytics account settings](https://app.usefathom.com/api) and use it to create a new client.
 
 > [!WARNING]  
 > Use permissions to restrict the API token to only the necessary operations (ex: `Admin`, `All sites (read only)`, `Site specific`)
 
 ```typescript
-import FathomApi from '@mackenly/fathom-api';
+import FathomApi from "@mackenly/fathom-api";
 
 // Create a new client with your API token
 const fathom = new FathomApi({
-  token: 'your-api-token',
-  // Optional parameters
-  // version: 'v1',
-  // baseUrl: 'https://api.usefathom.com'
+	token: "your-api-token",
+	// Optional parameters
+	// version: 'v1',
+	// baseUrl: 'https://api.usefathom.com'
 });
 
 // Example: Get account information
 async function getAccountInfo() {
-  try {
-    const account = await fathom.api.account.get();
-    console.log('Account:', account);
-  } catch (error) {
-    if (error instanceof FathomApiError) {
-      console.error('API Error:', error.message);
-    } else {
-      console.error('Error:', error);
-    }
-  }
+	try {
+		const account = await fathom.api.account.get();
+		console.log("Account:", account);
+	} catch (error) {
+		if (error instanceof FathomApiError) {
+			console.error("API Error:", error.message);
+		} else {
+			console.error("Error:", error);
+		}
+	}
 }
 
 getAccountInfo();
@@ -78,51 +80,51 @@ getAccountInfo();
 const sites = await fathom.api.getAllSites();
 
 // Get a specific site
-const site = await fathom.api.sites.get('SITEID');
+const site = await fathom.api.sites.get("SITEID");
 
 // Create a new site
 const newSite = await fathom.api.sites.create({
-  name: 'My New Website'
+	name: "My New Website",
 });
 
 // Update a site
-const updatedSite = await fathom.api.sites.update('SITEID', {
-  name: 'Updated Website Name',
-  sharing: 'private',
-  share_password: 'password123'
+const updatedSite = await fathom.api.sites.update("SITEID", {
+	name: "Updated Website Name",
+	sharing: "private",
+	share_password: "password123",
 });
 
 // Wipe site data
-const wipedSite = await fathom.api.sites.wipe('SITEID');
+const wipedSite = await fathom.api.sites.wipe("SITEID");
 
 // Delete a site
-const deletedSite = await fathom.api.sites.delete('SITEID');
+const deletedSite = await fathom.api.sites.delete("SITEID");
 ```
 
 ### Working with Events
 
 ```typescript
 // List all events for a site
-const events = await fathom.api.getAllEvents('SITEID');
+const events = await fathom.api.getAllEvents("SITEID");
 
 // Get a specific event
-const event = await fathom.api.events('SITEID').get('EVENT_ID');
+const event = await fathom.api.events("SITEID").get("EVENT_ID");
 
 // Create a new event
-const newEvent = await fathom.api.events('SITEID').create({
-  name: 'Newsletter Signup'
+const newEvent = await fathom.api.events("SITEID").create({
+	name: "Newsletter Signup",
 });
 
 // Update an event
-const updatedEvent = await fathom.api.events('SITEID').update('EVENT_ID', {
-  name: 'Updated Event Name'
+const updatedEvent = await fathom.api.events("SITEID").update("EVENT_ID", {
+	name: "Updated Event Name",
 });
 
 // Wipe event data
-const wipedEvent = await fathom.api.events('SITEID').wipe('EVENT_ID');
+const wipedEvent = await fathom.api.events("SITEID").wipe("EVENT_ID");
 
 // Delete an event
-const deletedEvent = await fathom.api.events('SITEID').delete('EVENT_ID');
+const deletedEvent = await fathom.api.events("SITEID").delete("EVENT_ID");
 ```
 
 ### Generating Reports
@@ -130,34 +132,34 @@ const deletedEvent = await fathom.api.events('SITEID').delete('EVENT_ID');
 ```typescript
 // Get aggregation report for pageviews
 const pageviewReport = await fathom.api.reports.aggregation({
-  entity: 'pageview',
-  entity_id: 'SITEID',
-  aggregates: 'visits,uniques,pageviews',
-  date_grouping: 'day',
-  field_grouping: 'pathname',
-  date_from: '2022-01-01',
-  date_to: '2022-01-31',
-  filters: [
-    {
-      property: 'pathname',
-      operator: 'is',
-      value: '/blog'
-    }
-  ]
+	entity: "pageview",
+	entity_id: "SITEID",
+	aggregates: "visits,uniques,pageviews",
+	date_grouping: "day",
+	field_grouping: "pathname",
+	date_from: "2022-01-01",
+	date_to: "2022-01-31",
+	filters: [
+		{
+			property: "pathname",
+			operator: "is",
+			value: "/blog",
+		},
+	],
 });
 
 // Get aggregation report for events
 const eventReport = await fathom.api.reports.aggregation({
-  entity: 'event',
-  entity_id: 'EVENT_ID',
-  aggregates: 'conversions,unique_conversions',
-  date_grouping: 'month'
+	entity: "event",
+	entity_id: "EVENT_ID",
+	aggregates: "conversions,unique_conversions",
+	date_grouping: "month",
 });
 
 // Get current visitors
 const currentVisitors = await fathom.api.reports.currentVisitors({
-  site_id: 'SITEID',
-  detailed: true
+	site_id: "SITEID",
+	detailed: true,
 });
 ```
 
@@ -168,12 +170,12 @@ This SDK is designed to support potential future API versions. The default versi
 ```typescript
 // Specify version at initialization
 const fathom = new FathomApi({
-  token: 'your-api-token',
-  version: 'v1'
+	token: "your-api-token",
+	version: "v1",
 });
 
 // Or access a specific version after initialization
-const v1 = fathom.version('v1');
+const v1 = fathom.version("v1");
 ```
 
 ## API Reference
@@ -201,16 +203,16 @@ new FathomApi(options: {
 The SDK throws `FathomApiError` instances for API errors. These include an `error` property with the error message from the API and a `status` property with the HTTP status code:
 
 ```typescript
-import { FathomApi, FathomApiError } from '@mackenly/fathom-api';
+import { FathomApi, FathomApiError } from "@mackenly/fathom-api";
 
 try {
-  const result = await fathom.api.sites.get('non-existent-site');
+	const result = await fathom.api.sites.get("non-existent-site");
 } catch (error) {
-  if (error instanceof FathomApiError) {
-    console.error(`API Error (${error.status}):`, error.error);
-  } else {
-    console.error('Unexpected error:', error);
-  }
+	if (error instanceof FathomApiError) {
+		console.error(`API Error (${error.status}):`, error.error);
+	} else {
+		console.error("Unexpected error:", error);
+	}
 }
 ```
 
@@ -228,42 +230,43 @@ const allSites = await fathom.api.getAllSites();
 ```
 
 ## Proxy Example
+
 If you're using this browser in frontend code or other applications where you might want to not include your API key, you can create a server-side request proxy to forward requests to the Fathom API, validate incoming API keys, and add your Fathom API key for the actual request to Fathom. Here's an example:
 
 In your client side code:
 ```typescript
 const fathom = new FathomApi({
-  token: 'temp_token',
-  baseUrl: 'https://your-proxy-server.com'
+	token: "temp_token",
+	baseUrl: "https://your-proxy-server.com",
 });
 ```
 
 A Cloudflare Worker:
 ```typescript
 export default {
-  async fetch(request) {
-    // Only allow GET requests for this example
-    if (request.method !== 'GET') {
-      return new Response('Method not allowed', { status: 405 });
-    }
+	async fetch(request) {
+		// Only allow GET requests for this example
+		if (request.method !== "GET") {
+			return new Response("Method not allowed", { status: 405 });
+		}
 
-    const url = new URL(request.url);
-    const targetUrl = new URL(url.pathname + url.search, 'https://api.usefathom.com');
-    const newHeaders = new Headers(request.headers);
-    let authHeader = newHeaders.get('Authorization');
+		const url = new URL(request.url);
+		const targetUrl = new URL(url.pathname + url.search, "https://api.usefathom.com");
+		const newHeaders = new Headers(request.headers);
+		let authHeader = newHeaders.get("Authorization");
 
-    // Modify this to validate incoming API keys (perhaps from a database)
-    if (authHeader && authHeader.includes('temp_token')) {
-      authHeader = authHeader.replace('temp_token', 'real_token');
-      newHeaders.set('Authorization', authHeader);
-    }
+		// Modify this to validate incoming API keys (perhaps from a database)
+		if (authHeader && authHeader.includes("temp_token")) {
+			authHeader = authHeader.replace("temp_token", "real_token");
+			newHeaders.set("Authorization", authHeader);
+		}
 
-    return await fetch(targetUrl.toString(), {
-      method: 'GET',
-      headers: newHeaders,
-    });
-  }
-}
+		return await fetch(targetUrl.toString(), {
+			method: "GET",
+			headers: newHeaders,
+		});
+	},
+};
 ```
 
 ## Compatibility

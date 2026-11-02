@@ -21,19 +21,22 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-            fetch-depth: 0
-            token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '26'
+          node-version: "26"
 
       - name: Install dependencies
         run: npm ci
 
       - name: Run lint
         run: npm run lint
+
+      - name: Typecheck
+        run: npm run typecheck
 
       - name: Run tests
         run: npm run test
@@ -47,20 +50,20 @@ jobs:
           new_tag=$(npm version patch --no-git-tag-version)
           echo "new_tag=${new_tag}" >> $GITHUB_OUTPUT
           echo "Creating tag: ${new_tag}"
-          
+
           # Now update jsr.json with the new version from package.json
           new_version=$(jq -r '.version' package.json)
           jq --arg new_version "$new_version" '.version = $new_version' jsr.json > jsr.tmp && mv jsr.tmp jsr.json
-          
+
           # Commit all changes and push with tag
           git add package.json jsr.json
           git commit -m "ci: bump version to $new_tag"
           git tag -a $new_tag -m "$new_tag"
-          
+
           # Push commit and tag separately to ensure both go through
           git push origin main
           git push origin $new_tag
-          
+
           # Verify the tag was pushed
           if git ls-remote --tags origin | grep -q "$new_tag"; then
             echo "Tag $new_tag successfully pushed to remote"
@@ -68,7 +71,7 @@ jobs:
             echo "Failed to push tag $new_tag to remote"
             exit 1
           fi
-          
+
           # Ensure the push is complete by waiting a moment
           sleep 5
 
@@ -82,35 +85,35 @@ jobs:
       id-token: write # OIDC for npm trusted publishing and provenance attestations.
 
     steps:
-        - name: Checkout code
-          uses: actions/checkout@v4
-          with:
-            ref: ${{ needs.bump-version.outputs.new_tag }}
-            fetch-depth: 0
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.bump-version.outputs.new_tag }}
+          fetch-depth: 0
 
-        - name: Verify tag
-          run: |
-            if [ "$(git describe --tags)" != "${{ needs.bump-version.outputs.new_tag }}" ]; then
-              echo "Error: Expected tag ${{ needs.bump-version.outputs.new_tag }} but got $(git describe --tags)"
-              exit 1
-            fi
-            
-        - name: Set up Node.js
-          # Node 26 bundles npm >= 11.5.1, required for OIDC publish and provenance.
-          uses: actions/setup-node@v6
-          with:
-            node-version: '26'
-            registry-url: 'https://registry.npmjs.org'
-            package-manager-cache: false
+      - name: Verify tag
+        run: |
+          if [ "$(git describe --tags)" != "${{ needs.bump-version.outputs.new_tag }}" ]; then
+            echo "Error: Expected tag ${{ needs.bump-version.outputs.new_tag }} but got $(git describe --tags)"
+            exit 1
+          fi
 
-        - name: Install dependencies
-          run: npm ci
+      - name: Set up Node.js
+        # Node 26 bundles npm >= 11.5.1, required for OIDC publish and provenance.
+        uses: actions/setup-node@v6
+        with:
+          node-version: "26"
+          registry-url: "https://registry.npmjs.org"
+          package-manager-cache: false
 
-        - name: Build
-          run: npm run build
-              
-        - name: Publish to npm
-          run: npm publish --access public --tag latest --provenance
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Publish to npm
+        run: npm publish --access public --tag latest --provenance
 
   publish-github-packages:
     if: success()
@@ -122,36 +125,36 @@ jobs:
       packages: write
 
     steps:
-        - name: Checkout code
-          uses: actions/checkout@v4
-          with:
-            ref: ${{ needs.bump-version.outputs.new_tag }}
-            fetch-depth: 0
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.bump-version.outputs.new_tag }}
+          fetch-depth: 0
 
-        - name: Verify tag
-          run: |
-            if [ "$(git describe --tags)" != "${{ needs.bump-version.outputs.new_tag }}" ]; then
-              echo "Error: Expected tag ${{ needs.bump-version.outputs.new_tag }} but got $(git describe --tags)"
-              exit 1
-            fi
-        
-        - name: Set up Node.js
-          uses: actions/setup-node@v4
-          with:
-            node-version: '26'
-            registry-url: 'https://npm.pkg.github.com'
-            scope: '@${{ github.repository_owner }}'
+      - name: Verify tag
+        run: |
+          if [ "$(git describe --tags)" != "${{ needs.bump-version.outputs.new_tag }}" ]; then
+            echo "Error: Expected tag ${{ needs.bump-version.outputs.new_tag }} but got $(git describe --tags)"
+            exit 1
+          fi
 
-        - name: Install dependencies
-          run: npm ci
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "26"
+          registry-url: "https://npm.pkg.github.com"
+          scope: "@${{ github.repository_owner }}"
 
-        - name: Build
-          run: npm run build
-              
-        - name: Publish to GitHub Packages
-          run: npm publish --access public
-          env:
-            NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Publish to GitHub Packages
+        run: npm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   publish-jsr:
     if: success()
@@ -179,7 +182,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '26'
+          node-version: "26"
 
       - name: Install dependencies
         run: npm ci
@@ -193,30 +196,30 @@ jobs:
     needs: bump-version
     timeout-minutes: 10
     permissions:
-      contents: write  # Changed to write since we need to create a release
+      contents: write # Changed to write since we need to create a release
 
     steps:
-        - name: Checkout code
-          uses: actions/checkout@v4
-          with:
-            ref: ${{ needs.bump-version.outputs.new_tag }}
-            fetch-depth: 0
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.bump-version.outputs.new_tag }}
+          fetch-depth: 0
 
-        - name: Verify tag
-          run: |
-            if [ "$(git describe --tags)" != "${{ needs.bump-version.outputs.new_tag }}" ]; then
-              echo "Error: Expected tag ${{ needs.bump-version.outputs.new_tag }} but got $(git describe --tags)"
-              exit 1
-            fi
-    
-        - name: Create release
-          id: create_release
-          uses: ncipollo/release-action@v1
-          env:
-            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          with:
-            tag: ${{ needs.bump-version.outputs.new_tag }}
-            name: ${{ needs.bump-version.outputs.new_tag }}
-            generateReleaseNotes: true
-            draft: false
-            prerelease: false
+      - name: Verify tag
+        run: |
+          if [ "$(git describe --tags)" != "${{ needs.bump-version.outputs.new_tag }}" ]; then
+            echo "Error: Expected tag ${{ needs.bump-version.outputs.new_tag }} but got $(git describe --tags)"
+            exit 1
+          fi
+
+      - name: Create release
+        id: create_release
+        uses: ncipollo/release-action@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag: ${{ needs.bump-version.outputs.new_tag }}
+          name: ${{ needs.bump-version.outputs.new_tag }}
+          generateReleaseNotes: true
+          draft: false
+          prerelease: false
