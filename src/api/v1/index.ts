@@ -97,8 +97,9 @@ export class FathomApiV1 {
         return allSites.slice(0, limit);
       }
       
-      hasMore = response.has_more;
-      if (hasMore && response.data.length > 0) {
+      // An empty page ends pagination so a has_more flag cannot loop on the same cursor.
+      hasMore = response.has_more && response.data.length > 0;
+      if (hasMore) {
         lastId = response.data[response.data.length - 1].id;
       }
     }
@@ -146,8 +147,9 @@ export class FathomApiV1 {
         return allEvents.slice(0, limit);
       }
       
-      hasMore = response.has_more;
-      if (hasMore && response.data.length > 0) {
+      // An empty page ends pagination so a has_more flag cannot loop on the same cursor.
+      hasMore = response.has_more && response.data.length > 0;
+      if (hasMore) {
         lastId = response.data[response.data.length - 1].id;
       }
     }
