@@ -36,7 +36,7 @@
 		"@types/node": "^18.0.0",
 		"@vitest/coverage-v8": "^0.34.0",
 		"msw": "^1.2.3",
-		"tsup": "^7.0.0",
+		"tsup": "^9.0.0",
 		"typescript": "^5.0.0",
 		"vitest": "^0.34.0"
 	},
