@@ -25,6 +25,10 @@
   ],
   "author": "",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mackenly/fathom-api.git"
+  },
   "devDependencies": {
     "@types/node": "^18.0.0",
     "@vitest/coverage-v8": "^0.34.0",
