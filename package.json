@@ -33,7 +33,7 @@
 	},
 	"devDependencies": {
 		"@biomejs/biome": "2.6.4",
-		"@types/node": "^18.0.0",
+		"@types/node": "^26.6.6",
 		"@vitest/coverage-v8": "^0.34.0",
 		"msw": "^1.2.3",
 		"tsup": "^7.0.0",
