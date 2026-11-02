@@ -1,7 +1,8 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { HttpClient } from '../src/utils/http';
 import { SitesResource } from '../src/api/v1/sites';
-import { server, createMockHandler } from './test-setup';
+import { server, createMockHandler, recordRequests } from './test-setup';
+import { expectSearch } from './expect-request';
 import { rest } from 'msw';
 
 describe('SitesResource', () => {
@@ -44,29 +45,21 @@ describe('SitesResource', () => {
     });
 
     it('should support pagination parameters', async () => {
-      server.use(
-        rest.get('https://api.usefathom.com/v1/sites', (req, res, ctx) => {
-          const limit = req.url.searchParams.get('limit');
-          const startingAfter = req.url.searchParams.get('starting_after');
-          
-          return res(
-            ctx.status(200),
-            ctx.json({
-              object: 'list',
-              url: '/v1/sites',
-              has_more: false,
-              data: [mockSite],
-            })
-          );
-        })
-      );
+      const requests = recordRequests({
+        object: 'list',
+        url: '/v1/sites',
+        has_more: false,
+        data: [mockSite],
+      });
 
       const response = await sites.list({ limit: 20, starting_after: 'XYZ123' });
-      
+
       expect(response.object).toBe('list');
       expect(response.has_more).toBe(false);
-      expect(response.data).toHaveLength(1);
-      expect(response.data[0]).toEqual(mockSite);
+      expect(response.data).toEqual([mockSite]);
+      expect(requests).toHaveLength(1);
+      expect(requests[0].pathname).toBe('/v1/sites');
+      expectSearch(requests[0].search, { limit: '20', starting_after: 'XYZ123' });
     });
   });
 
@@ -83,6 +76,9 @@ describe('SitesResource', () => {
     it('should throw error when siteId is missing', async () => {
       await expect(sites.get('')).rejects.toThrow('Site ID is required');
       await expect(sites.get(undefined as any)).rejects.toThrow('Site ID is required');
+      await expect(sites.update('', { name: 'Updated' })).rejects.toThrow('Site ID is required');
+      await expect(sites.wipe('')).rejects.toThrow('Site ID is required');
+      await expect(sites.delete('')).rejects.toThrow('Site ID is required');
     });
   });
 

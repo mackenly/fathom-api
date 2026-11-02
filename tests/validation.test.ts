@@ -4,8 +4,12 @@ import {
   validate, 
   createSiteSchema, 
   updateSiteSchema, 
+  createEventSchema,
+  updateEventSchema,
   paginationSchema, 
-  aggregationParamsSchema 
+  aggregationParamsSchema,
+  currentVisitorsParamsSchema,
+  clientOptionsSchema,
 } from '../src/utils/validation';
 
 describe('Validation Utilities', () => {
@@ -136,6 +140,112 @@ describe('Validation Utilities', () => {
           ]
         });
       }).toThrow();
+    });
+
+    it('accepts the documented date groupings and a positive limit', () => {
+      const data = {
+        entity: 'event' as const,
+        entity_id: 'EV123',
+        aggregates: 'conversions',
+        date_grouping: 'hour' as const,
+        limit: 1,
+        filters: [],
+      };
+      expect(validate(aggregationParamsSchema, data)).toEqual(data);
+    });
+
+    it('rejects empty identifiers, empty aggregates, and a non-positive limit', () => {
+      expect(() => validate(aggregationParamsSchema, {
+        entity: 'pageview',
+        entity_id: '',
+        aggregates: 'visits',
+      })).toThrow(/entity_id/);
+      expect(() => validate(aggregationParamsSchema, {
+        entity: 'pageview',
+        entity_id: 'ABCDEF',
+        aggregates: '',
+      })).toThrow(/aggregates/);
+      expect(() => validate(aggregationParamsSchema, {
+        entity: 'pageview',
+        entity_id: 'ABCDEF',
+        aggregates: 'visits',
+        date_grouping: 'week',
+      })).toThrow(/date_grouping/);
+      expect(() => validate(aggregationParamsSchema, {
+        entity: 'pageview',
+        entity_id: 'ABCDEF',
+        aggregates: 'visits',
+        limit: 0,
+      })).toThrow(/limit/);
+    });
+  });
+
+  describe('paginationSchema boundaries', () => {
+    it('accepts the inclusive limit bounds', () => {
+      expect(validate(paginationSchema, { limit: 1 })).toEqual({ limit: 1 });
+      expect(validate(paginationSchema, { limit: 100, ending_before: 'abc' })).toEqual({
+        limit: 100,
+        ending_before: 'abc',
+      });
+    });
+  });
+
+  describe('event schemas', () => {
+    it('requires a name between 1 and 255 characters', () => {
+      expect(validate(createEventSchema, { name: 'Signup' })).toEqual({ name: 'Signup' });
+      expect(validate(updateEventSchema, { name: 'Signup' })).toEqual({ name: 'Signup' });
+      expect(validate(createEventSchema, { name: 'x'.repeat(255) }).name).toHaveLength(255);
+      expect(() => validate(createEventSchema, { name: '' })).toThrow(/name/);
+      expect(() => validate(updateEventSchema, { name: 'x'.repeat(256) })).toThrow(/name/);
+      expect(() => validate(createEventSchema, {})).toThrow(/name/);
+      expect(() => validate(updateEventSchema, { name: 'Signup', extra: true })).toThrow(/extra/);
+    });
+  });
+
+  describe('currentVisitorsParamsSchema', () => {
+    it('requires a site id and an optional boolean breakdown flag', () => {
+      expect(validate(currentVisitorsParamsSchema, { site_id: 'ABCDEF' })).toEqual({
+        site_id: 'ABCDEF',
+      });
+      expect(validate(currentVisitorsParamsSchema, { site_id: 'ABCDEF', detailed: false })).toEqual({
+        site_id: 'ABCDEF',
+        detailed: false,
+      });
+      expect(() => validate(currentVisitorsParamsSchema, { site_id: '' })).toThrow(/site_id/);
+      expect(() => validate(currentVisitorsParamsSchema, { site_id: 'ABCDEF', detailed: 'yes' })).toThrow(/detailed/);
+      expect(() => validate(currentVisitorsParamsSchema, { site_id: 'ABCDEF', extra: true })).toThrow(/extra/);
+    });
+  });
+
+  describe('clientOptionsSchema', () => {
+    it('requires a token and accepts the documented optional fields', () => {
+      expect(validate(clientOptionsSchema, { token: 'abc' })).toEqual({ token: 'abc' });
+      expect(validate(clientOptionsSchema, {
+        token: 'abc',
+        version: 'v1',
+        baseUrl: 'https://proxy.example.com',
+      })).toEqual({
+        token: 'abc',
+        version: 'v1',
+        baseUrl: 'https://proxy.example.com',
+      });
+    });
+
+    it('wraps zod failures as FathomApiError 400 through zod-validation-error', () => {
+      expect(() => validate(clientOptionsSchema, {})).toThrow(FathomApiError);
+      expect(() => validate(clientOptionsSchema, {})).toThrow(/Validation error:.*at "token"/);
+      expect(() => validate(clientOptionsSchema, { token: 'abc', baseUrl: 'not-a-url' })).toThrow(/at "baseUrl"/);
+      expect(() => validate(clientOptionsSchema, { token: 'abc', version: 'v2' })).toThrow(/version/);
+      expect(() => validate(clientOptionsSchema, { token: 'abc', extra: true })).toThrow(/extra/);
+    });
+  });
+
+  describe('createSiteSchema bounds', () => {
+    it('accepts a 255 character name and rejects a longer one', () => {
+      const name = 'x'.repeat(255);
+      expect(validate(createSiteSchema, { name }).name).toBe(name);
+      expect(() => validate(createSiteSchema, { name: 'x'.repeat(256) })).toThrow(/name/);
+      expect(() => validate(updateSiteSchema, { name: '' })).toThrow(/name/);
     });
   });
 });
