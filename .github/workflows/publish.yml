@@ -27,7 +27,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version: '26'
 
       - name: Install dependencies
         run: npm ci
@@ -96,10 +96,10 @@ jobs:
             fi
             
         - name: Set up Node.js
-          # Node 24 bundles npm >= 11.5.1, required for OIDC publish and provenance.
+          # Node 26 bundles npm >= 11.5.1, required for OIDC publish and provenance.
           uses: actions/setup-node@v6
           with:
-            node-version: '24'
+            node-version: '26'
             registry-url: 'https://registry.npmjs.org'
             package-manager-cache: false
 
@@ -138,7 +138,7 @@ jobs:
         - name: Set up Node.js
           uses: actions/setup-node@v4
           with:
-            node-version: '22'
+            node-version: '26'
             registry-url: 'https://npm.pkg.github.com'
             scope: '@${{ github.repository_owner }}'
 
@@ -179,7 +179,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version: '26'
 
       - name: Install dependencies
         run: npm ci
