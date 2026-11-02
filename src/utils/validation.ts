@@ -6,11 +6,7 @@ import { FathomApiError } from "./http";
  * Pagination schema
  * This schema validates the pagination parameters for API requests.
  */
-export const paginationSchema: z.ZodObject<{
-	limit: z.ZodOptional<z.ZodNumber>;
-	starting_after: z.ZodOptional<z.ZodString>;
-	ending_before: z.ZodOptional<z.ZodString>;
-}> = z
+export const paginationSchema = z
 	.object({
 		limit: z.number().min(1).max(100).optional(),
 		starting_after: z.string().optional(),
@@ -22,13 +18,7 @@ export const paginationSchema: z.ZodObject<{
  * Site schema
  * This schema validates the site data for creating a site.
  */
-export const createSiteSchema: z.ZodEffects<
-	z.ZodObject<{
-		name: z.ZodString;
-		sharing: z.ZodOptional<z.ZodEnum<["none", "private", "public"]>>;
-		share_password: z.ZodOptional<z.ZodString>;
-	}>
-> = z
+export const createSiteSchema = z
 	.object({
 		name: z.string().min(1).max(255),
 		sharing: z.enum(["none", "private", "public"]).optional(),
@@ -52,13 +42,7 @@ export const createSiteSchema: z.ZodEffects<
  * Site schema
  * This schema validates the optional fields for updating a site.
  */
-export const updateSiteSchema: z.ZodEffects<
-	z.ZodObject<{
-		name: z.ZodOptional<z.ZodString>;
-		sharing: z.ZodOptional<z.ZodEnum<["none", "private", "public"]>>;
-		share_password: z.ZodOptional<z.ZodString>;
-	}>
-> = z
+export const updateSiteSchema = z
 	.object({
 		name: z.string().min(1).max(255).optional(),
 		sharing: z.enum(["none", "private", "public"]).optional(),
@@ -82,9 +66,7 @@ export const updateSiteSchema: z.ZodEffects<
  * Event schema
  * This schema validates the event data for creating an event.
  */
-export const createEventSchema: z.ZodObject<{
-	name: z.ZodString;
-}> = z
+export const createEventSchema = z
 	.object({
 		name: z.string().min(1).max(255),
 	})
@@ -94,27 +76,16 @@ export const createEventSchema: z.ZodObject<{
  * Update event schema
  * This schema validates the event data for updating an event.
  */
-export const updateEventSchema: z.ZodObject<{
-	name: z.ZodString;
-}> = z
+export const updateEventSchema = z
 	.object({
 		name: z.string().min(1).max(255),
 	})
 	.strict();
 
 // Aggregation report validation schemas
-const filterOperatorSchema: z.ZodEnum<["is", "is not", "is like", "is not like"]> = z.enum([
-	"is",
-	"is not",
-	"is like",
-	"is not like",
-]);
+const filterOperatorSchema = z.enum(["is", "is not", "is like", "is not like"]);
 
-const aggregationFilterSchema: z.ZodObject<{
-	property: z.ZodString;
-	operator: z.ZodEnum<["is", "is not", "is like", "is not like"]>;
-	value: z.ZodString;
-}> = z
+const aggregationFilterSchema = z
 	.object({
 		property: z.string(),
 		operator: filterOperatorSchema,
@@ -126,27 +97,7 @@ const aggregationFilterSchema: z.ZodObject<{
  * Aggregation report validation schema
  * This schema validates the parameters for an aggregation report.
  */
-export const aggregationParamsSchema: z.ZodObject<{
-	entity: z.ZodEnum<["pageview", "event"]>;
-	entity_id: z.ZodString;
-	aggregates: z.ZodString;
-	date_grouping: z.ZodOptional<z.ZodEnum<["hour", "day", "month", "year", "none"]>>;
-	field_grouping: z.ZodOptional<z.ZodString>;
-	sort_by: z.ZodOptional<z.ZodString>;
-	timezone: z.ZodOptional<z.ZodString>;
-	date_from: z.ZodOptional<z.ZodString>;
-	date_to: z.ZodOptional<z.ZodString>;
-	limit: z.ZodOptional<z.ZodNumber>;
-	filters: z.ZodOptional<
-		z.ZodArray<
-			z.ZodObject<{
-				property: z.ZodString;
-				operator: z.ZodEnum<["is", "is not", "is like", "is not like"]>;
-				value: z.ZodString;
-			}>
-		>
-	>;
-}> = z
+export const aggregationParamsSchema = z
 	.object({
 		entity: z.enum(["pageview", "event"]),
 		entity_id: z.string().min(1),
@@ -166,10 +117,7 @@ export const aggregationParamsSchema: z.ZodObject<{
  * Current visitors validation schema
  * This schema validates the parameters for retrieving current visitors at a site.
  */
-export const currentVisitorsParamsSchema: z.ZodObject<{
-	site_id: z.ZodString;
-	detailed: z.ZodOptional<z.ZodBoolean>;
-}> = z
+export const currentVisitorsParamsSchema = z
 	.object({
 		site_id: z.string().min(1),
 		detailed: z.boolean().optional(),
@@ -180,11 +128,7 @@ export const currentVisitorsParamsSchema: z.ZodObject<{
  * Client options schema
  * This schema validates the options for creating a client.
  */
-export const clientOptionsSchema: z.ZodObject<{
-	token: z.ZodString;
-	version: z.ZodOptional<z.ZodEnum<["v1"]>>;
-	baseUrl: z.ZodOptional<z.ZodString>;
-}> = z
+export const clientOptionsSchema = z
 	.object({
 		token: z.string().min(1),
 		version: z.enum(["v1"]).optional(),
@@ -200,7 +144,7 @@ export const clientOptionsSchema: z.ZodObject<{
  * @returns Validated data
  * @throws FathomApiError if validation fails
  */
-export function validate<T>(schema: z.ZodType<T>, data: unknown): T {
+export function validate<T extends z.ZodType>(schema: T, data: unknown): z.output<T> {
 	try {
 		return schema.parse(data);
 	} catch (error) {

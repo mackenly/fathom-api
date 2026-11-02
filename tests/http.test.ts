@@ -1,4 +1,4 @@
-import { rest } from "msw";
+import { HttpResponse, http } from "msw";
 import { beforeEach, describe, expect, it } from "vitest";
 import { FathomApiError, HttpClient } from "../src/utils/http";
 import { expectSingleRequest } from "./expect-request";
@@ -35,11 +35,12 @@ describe("HttpClient", () => {
 
 		it("should handle query parameters correctly", async () => {
 			server.use(
-				rest.get("https://api.usefathom.com/v1/test", (req, res, ctx) => {
-					const param1 = req.url.searchParams.get("param1");
-					const param2 = req.url.searchParams.get("param2");
+				http.get("https://api.usefathom.com/v1/test", ({ request }) => {
+					const url = new URL(request.url);
+					const param1 = url.searchParams.get("param1");
+					const param2 = url.searchParams.get("param2");
 
-					return res(ctx.status(200), ctx.json({ param1, param2 }));
+					return HttpResponse.json({ param1, param2 });
 				}),
 			);
 
@@ -68,9 +69,9 @@ describe("HttpClient", () => {
 	describe("post", () => {
 		it("should make a successful POST request with body", async () => {
 			server.use(
-				rest.post("https://api.usefathom.com/v1/test", async (req, res, ctx) => {
-					const body = await req.json();
-					return res(ctx.status(200), ctx.json({ received: body }));
+				http.post("https://api.usefathom.com/v1/test", async ({ request }) => {
+					const body = await request.json();
+					return HttpResponse.json({ received: body });
 				}),
 			);
 
@@ -200,8 +201,8 @@ describe("HttpClient", () => {
 
 		it("wraps a non-JSON body as a request failure", async () => {
 			server.use(
-				rest.get("https://api.usefathom.com/v1/account", (_req, res, ctx) => {
-					return res(ctx.status(200), ctx.body("not-json"));
+				http.get("https://api.usefathom.com/v1/account", () => {
+					return HttpResponse.text("not-json");
 				}),
 			);
 
@@ -210,8 +211,8 @@ describe("HttpClient", () => {
 
 		it("wraps network failures as a request failure", async () => {
 			server.use(
-				rest.get("https://api.usefathom.com/v1/account", (_req, res) => {
-					return res.networkError("connection reset");
+				http.get("https://api.usefathom.com/v1/account", () => {
+					return HttpResponse.error();
 				}),
 			);
 

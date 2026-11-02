@@ -1,4 +1,4 @@
-import { type DefaultBodyType, type RestRequest, rest } from "msw";
+import { type DefaultBodyType, HttpResponse, http } from "msw";
 import { setupServer } from "msw/node";
 
 // This creates a MSW server instance for mocking API responses.
@@ -17,8 +17,8 @@ export interface CapturedRequest {
 	body: unknown;
 }
 
-async function capture(req: RestRequest): Promise<CapturedRequest> {
-	const text = await req.text();
+async function capture(request: Request): Promise<CapturedRequest> {
+	const text = await request.text();
 	let body: unknown;
 	if (text) {
 		try {
@@ -28,15 +28,17 @@ async function capture(req: RestRequest): Promise<CapturedRequest> {
 		}
 	}
 
+	const url = new URL(request.url);
+
 	return {
-		method: req.method,
-		href: req.url.href,
-		origin: req.url.origin,
-		pathname: req.url.pathname,
-		search: [...req.url.searchParams.entries()],
-		authorization: req.headers.get("authorization"),
-		accept: req.headers.get("accept"),
-		contentType: req.headers.get("content-type"),
+		method: request.method,
+		href: url.href,
+		origin: url.origin,
+		pathname: url.pathname,
+		search: [...url.searchParams.entries()],
+		authorization: request.headers.get("authorization"),
+		accept: request.headers.get("accept"),
+		contentType: request.headers.get("content-type"),
 		body,
 	};
 }
@@ -46,10 +48,10 @@ function installRecorder(
 	respond: (index: number) => { status: number; body: DefaultBodyType },
 ) {
 	server.use(
-		rest.all("*", async (req, res, ctx) => {
-			requests.push(await capture(req));
+		http.all("*", async ({ request }) => {
+			requests.push(await capture(request.clone()));
 			const { status, body } = respond(requests.length - 1);
-			return res(ctx.status(status), ctx.json(body));
+			return HttpResponse.json(body, { status });
 		}),
 	);
 }
@@ -82,7 +84,7 @@ export function createMockHandler(
 	response: DefaultBodyType,
 	status = 200,
 ) {
-	return rest[method](`https://api.usefathom.com${path}`, (_req, res, ctx) => {
-		return res(ctx.status(status), ctx.json(response));
+	return http[method](`https://api.usefathom.com${path}`, () => {
+		return HttpResponse.json(response, { status });
 	});
 }

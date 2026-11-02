@@ -1,4 +1,4 @@
-import { rest } from "msw";
+import { HttpResponse, http } from "msw";
 import { beforeEach, describe, expect, it } from "vitest";
 import { SitesResource } from "../src/api/v1/sites";
 import { HttpClient } from "../src/utils/http";
@@ -84,18 +84,15 @@ describe("SitesResource", () => {
 	describe("create", () => {
 		it("should create a site successfully", async () => {
 			server.use(
-				rest.post("https://api.usefathom.com/v1/sites", async (req, res, ctx) => {
-					const body = await req.json();
-					return res(
-						ctx.status(200),
-						ctx.json({
-							id: "NEWSITE",
-							object: "site",
-							name: body.name,
-							sharing: body.sharing || "none",
-							created_at: "2022-01-01 12:00:00",
-						}),
-					);
+				http.post("https://api.usefathom.com/v1/sites", async ({ request }) => {
+					const body = (await request.json()) as { name: string; sharing?: string };
+					return HttpResponse.json({
+						id: "NEWSITE",
+						object: "site",
+						name: body.name,
+						sharing: body.sharing || "none",
+						created_at: "2022-01-01 12:00:00",
+					});
 				}),
 			);
 
@@ -113,15 +110,12 @@ describe("SitesResource", () => {
 	describe("update", () => {
 		it("should update a site successfully", async () => {
 			server.use(
-				rest.post("https://api.usefathom.com/v1/sites/ABCDEF", async (req, res, ctx) => {
-					const body = await req.json();
-					return res(
-						ctx.status(200),
-						ctx.json({
-							...mockSite,
-							name: body.name,
-						}),
-					);
+				http.post("https://api.usefathom.com/v1/sites/ABCDEF", async ({ request }) => {
+					const body = (await request.json()) as { name: string };
+					return HttpResponse.json({
+						...mockSite,
+						name: body.name,
+					});
 				}),
 			);
 
