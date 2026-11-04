@@ -1,12 +1,23 @@
 import { z } from "zod";
 import { fromZodError } from "zod-validation-error";
+import type { FathomClientOptions, PaginationParams } from "../types/base";
+import type {
+	AggregationFilter,
+	AggregationParams,
+	CreateEventParams,
+	CreateSiteParams,
+	CurrentVisitorsParams,
+	FilterOperator,
+	UpdateEventParams,
+	UpdateSiteParams,
+} from "../types/params";
 import { FathomApiError } from "./http";
 
 /**
  * Pagination schema
  * This schema validates the pagination parameters for API requests.
  */
-export const paginationSchema = z
+export const paginationSchema: z.ZodType<PaginationParams> = z
 	.object({
 		limit: z.number().min(1).max(100).optional(),
 		starting_after: z.string().optional(),
@@ -18,7 +29,7 @@ export const paginationSchema = z
  * Site schema
  * This schema validates the site data for creating a site.
  */
-export const createSiteSchema = z
+export const createSiteSchema: z.ZodType<CreateSiteParams> = z
 	.object({
 		name: z.string().min(1).max(255),
 		sharing: z.enum(["none", "private", "public"]).optional(),
@@ -42,7 +53,7 @@ export const createSiteSchema = z
  * Site schema
  * This schema validates the optional fields for updating a site.
  */
-export const updateSiteSchema = z
+export const updateSiteSchema: z.ZodType<UpdateSiteParams> = z
 	.object({
 		name: z.string().min(1).max(255).optional(),
 		sharing: z.enum(["none", "private", "public"]).optional(),
@@ -66,7 +77,7 @@ export const updateSiteSchema = z
  * Event schema
  * This schema validates the event data for creating an event.
  */
-export const createEventSchema = z
+export const createEventSchema: z.ZodType<CreateEventParams> = z
 	.object({
 		name: z.string().min(1).max(255),
 	})
@@ -76,16 +87,21 @@ export const createEventSchema = z
  * Update event schema
  * This schema validates the event data for updating an event.
  */
-export const updateEventSchema = z
+export const updateEventSchema: z.ZodType<UpdateEventParams> = z
 	.object({
 		name: z.string().min(1).max(255),
 	})
 	.strict();
 
 // Aggregation report validation schemas
-const filterOperatorSchema = z.enum(["is", "is not", "is like", "is not like"]);
+const filterOperatorSchema: z.ZodType<FilterOperator> = z.enum([
+	"is",
+	"is not",
+	"is like",
+	"is not like",
+]);
 
-const aggregationFilterSchema = z
+const aggregationFilterSchema: z.ZodType<AggregationFilter> = z
 	.object({
 		property: z.string(),
 		operator: filterOperatorSchema,
@@ -97,7 +113,7 @@ const aggregationFilterSchema = z
  * Aggregation report validation schema
  * This schema validates the parameters for an aggregation report.
  */
-export const aggregationParamsSchema = z
+export const aggregationParamsSchema: z.ZodType<AggregationParams> = z
 	.object({
 		entity: z.enum(["pageview", "event"]),
 		entity_id: z.string().min(1),
@@ -117,7 +133,7 @@ export const aggregationParamsSchema = z
  * Current visitors validation schema
  * This schema validates the parameters for retrieving current visitors at a site.
  */
-export const currentVisitorsParamsSchema = z
+export const currentVisitorsParamsSchema: z.ZodType<CurrentVisitorsParams> = z
 	.object({
 		site_id: z.string().min(1),
 		detailed: z.boolean().optional(),
@@ -128,7 +144,7 @@ export const currentVisitorsParamsSchema = z
  * Client options schema
  * This schema validates the options for creating a client.
  */
-export const clientOptionsSchema = z
+export const clientOptionsSchema: z.ZodType<FathomClientOptions> = z
 	.object({
 		token: z.string().min(1),
 		version: z.enum(["v1"]).optional(),
@@ -161,10 +177,10 @@ export function validate<T extends z.ZodType>(schema: T, data: unknown): z.outpu
  * Aggregation schema
  * @alias aggregationParamsSchema
  */
-export const aggregationSchema = aggregationParamsSchema;
+export const aggregationSchema: z.ZodType<AggregationParams> = aggregationParamsSchema;
 
 /**
  * Current visitors schema
  * @alias currentVisitorsParamsSchema
  */
-export const currentVisitorsSchema = currentVisitorsParamsSchema;
+export const currentVisitorsSchema: z.ZodType<CurrentVisitorsParams> = currentVisitorsParamsSchema;
