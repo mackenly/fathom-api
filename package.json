@@ -32,7 +32,7 @@
 		"url": "git+https://github.com/mackenly/fathom-api.git"
 	},
 	"devDependencies": {
-		"@biomejs/biome": "2.6.4",
+		"@biomejs/biome": "2.6.6",
 		"@types/node": "^26.6.6",
 		"@vitest/coverage-v8": "^5.1.0",
 		"msw": "^3.0.3",
